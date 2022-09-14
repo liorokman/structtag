@@ -270,6 +270,23 @@ func (t *Tag) HasOption(opt string) bool {
 	return false
 }
 
+// GetOptionByKey returns a []string of all options that share the same key in the tag.
+// i.e. if the tag is `jsonschema:"foo,enum=1,enum=2,enum=3"` then the returned value with
+// a key `enum` would be `{ "1", "2", "3"}`
+func (t *Tag) GetOptionByKey(key string) ([]string, bool) {
+	sieve := map[string][]string{}
+	for _, v := range t.Options {
+		before, after, found := strings.Cut(v, "=")
+		if found {
+			sieve[before] = append(sieve[before], after)
+		} else {
+			sieve[before] = []string{}
+		}
+	}
+	val, found := sieve[key]
+	return val, found
+}
+
 // Value returns the raw value of the tag, i.e. if the tag is
 // `json:"foo,omitempty", the Value is "foo,omitempty"
 func (t *Tag) Value() string {

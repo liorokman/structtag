@@ -202,6 +202,55 @@ func TestParse(t *testing.T) {
 	}
 }
 
+func TestTag_GetOptionByKey(t *testing.T) {
+	tag := `jsonschema:"key,enum=1,enum=2,enum=3,noval,minLength=1"`
+	tags, err := Parse(tag)
+	if err != nil {
+		t.Fatal(err)
+	}
+	someTag, err := tags.Get("jsonschema")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Run("single", func(t *testing.T) {
+		values, found := someTag.GetOptionByKey("minLength")
+		if !found {
+			t.Errorf("want: true, got: %t\n", found)
+		}
+		expected := []string{"1"}
+		if !reflect.DeepEqual(expected, values) {
+			t.Errorf("want: %#v, got: %#v\n", expected, values)
+		}
+	})
+	t.Run("multi", func(t *testing.T) {
+		values, found := someTag.GetOptionByKey("enum")
+		if !found {
+			t.Errorf("want: true, got: %t\n", found)
+		}
+		expected := []string{"1", "2", "3"}
+		if !reflect.DeepEqual(expected, values) {
+			t.Errorf("want: %#v, got: %#v\n", expected, values)
+		}
+	})
+	t.Run("noval", func(t *testing.T) {
+		values, found := someTag.GetOptionByKey("noval")
+		if !found {
+			t.Errorf("want: true, got: %t\n", found)
+		}
+		expected := []string{}
+		if !reflect.DeepEqual(expected, values) {
+			t.Errorf("want: %#v, got: %#v\n", expected, values)
+		}
+	})
+	t.Run("nokey", func(t *testing.T) {
+		_, found := someTag.GetOptionByKey("nokey")
+		if found {
+			t.Errorf("want: false, got: %t\n", found)
+		}
+	})
+
+}
+
 func TestTags_Get(t *testing.T) {
 	tag := `json:"foo,omitempty" structs:"bar,omitnested"`
 
